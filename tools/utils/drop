@@ -38,11 +38,18 @@ absolute_path() {
 
 name="$(absolute_path """$1""")"
 
+if [[ $name == *COMMIT_EDITMSG ]]; then
+    nvr_arg="--remote-wait"
+else
+    nvr_arg="--remote"
+fi
+
 if [ -z "$NVIM_LISTEN_ADDRESS" ]; then
 	printf '\033]51;["call", "Tapi_TerminalEdit", ["%s"]]\007' "$name"
 else
 	if [ -x "$(which nvr 2> /dev/null)" ]; then
-		nvr --servername "$VIM_SERVERNAME" --remote-expr "Tapi_TerminalEdit(0, '$name')"
+		# nvr --servername "$VIM_SERVERNAME" --remote-expr "Tapi_TerminalEdit(0, '$name')"
+        nvr +'set bufhidden=delete' -cc split --servername "$VIM_SERVERNAME" $nvr_arg "$name"
 	else
 		echo "cannot find nvr executable, please install neovim-remote"
 		exit 2
